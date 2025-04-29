@@ -22,7 +22,7 @@ def load_vocab(path): #Read a vocab file (one word per line) and return (vocab, 
     word2idx = {w: i for i, w in enumerate(vocab)} #create a dictionary with word as key and index as value
     return vocab, word2idx
 
-def iter_review_paths(input_dir):
+def review_paths(input_dir):
 
     # Yield (filepath, label) tuples for all review .txt files
     # under 'pos' and 'neg' subdirectories of input_dir.
@@ -34,6 +34,31 @@ def iter_review_paths(input_dir):
         for filename in os.listdir(dir_path):
             if filename.endswith('.txt'):
                 yield os.path.join(dir_path, filename), label
+
+
+def process_reviews(input_dir, output_file, vocab, word2idx):
+    """
+    Process each review file and write BOW vectors to output_file.
+    """
+    with open(output_file, 'w', encoding='utf8') as out_f:
+        for filepath, label in review_paths(input_dir):
+            # Read raw text
+            with open(filepath, 'r', encoding='utf8') as f:
+                text = f.read()
+            # Normalize: lowercase and separate punctuation
+            text = text.lower()
+            text = re.sub(r'([^\w\s])', r' \1 ', text)
+            # Tokenize and count
+            tokens = text.split()
+            counts = Counter(tokens)
+            # Build feature vector
+            vec = [0] * len(vocab)
+            for token, cnt in counts.items():
+                idx = word2idx.get(token)
+                if idx is not None:
+                    vec[idx] = cnt
+            # Write label + feature counts
+            out_f.write(label + ' ' + ' '.join(str(v) for v in vec) + '\n')
 
 def parse_args():
     # Create a parser object
@@ -66,13 +91,10 @@ def parse_args():
 
 def main():
     args = parse_args()
-    vocab, word2idx = load_vocab(args.vocab_file)
-    print(f"Loaded {len(vocab)} words from vocabulary.")
+    vocab, word2idx = load_vocab(args.vocab_file) #load the vocab file
+    process_reviews(args.input_dir, args.output_file, vocab, word2idx) #process the reviews
 
-    for filepath, label in iter_review_paths(args.input_dir):     #  iterate through review files and labels
-        # TODO: process each 'filepath' with label
-
-        
+    print(f"Loaded {len(vocab)} words from vocabulary.") 
     print(f"INPUT DIR   = {args.input_dir}")
     print(f"VOCAB FILE  = {args.vocab_file}")
     print(f"OUTPUT FILE = {args.output_file}")
