@@ -12,21 +12,21 @@ import os
 import re
 from collections import Counter
 
-def load_vocab(path): #Read a vocab file (one word per line) and return (vocab, word2idx)
+PUNCT_RE = re.compile(r'([^\w\s])') # Matches any non-word character or whitespace
+
+def load_vocab(path):
+    """Read a vocab file (one word per line) and return (vocab_list, word2idx_dict)."""
     vocab = []
     with open(path, 'r', encoding='utf8') as f:
         for line in f:
             w = line.strip() 
             if w:
-                vocab.append(w) #append the word to vocab
-    word2idx = {w: i for i, w in enumerate(vocab)} #create a dictionary with word as key and index as value
+                vocab.append(w)
+    word2idx = {w: i for i, w in enumerate(vocab)}
     return vocab, word2idx
 
 def review_paths(input_dir):
-
-    # Yield (filepath, label) tuples for all review .txt files
-    # under 'pos' and 'neg' subdirectories of input_dir.
-
+    """Yield (filepath, label) tuples for all '.txt' files under 'pos' and 'neg'."""
     for label in ('pos', 'neg'):
         dir_path = os.path.join(input_dir, label)
         if not os.path.isdir(dir_path):
@@ -47,27 +47,17 @@ def process_reviews(input_dir, output_file, vocab, word2idx):
                 text = f.read()
             # Normalize: lowercase and separate punctuation
             text = text.lower()
-            text = re.sub(r'([^\w\s])', r' \1 ', text)
+            text = PUNCT_RE.sub(r' \1 ', text)
             # Tokenize and count
             tokens = text.split()
             counts = Counter(tokens)
-            # Build feature vector
-            vec = [0] * len(vocab)
-            for token, cnt in counts.items():
-                idx = word2idx.get(token)
-                if idx is not None:
-                    vec[idx] = cnt
+            # Build BOW vector
+            vec = [counts.get(word, 0) for word in vocab]
             # Write label + feature counts
             out_f.write(label + ' ' + ' '.join(str(v) for v in vec) + '\n')
 
 def parse_args():
-    # Create a parser object
-    # and add arguments for input directory, vocab file, and output file
-    # The input directory should contain "pos" and "neg" subdirectories
-    # The vocab file should contain one word per line
-    # The output file is where the vectorized output will be written
-    # The parser will also display a description of the script
-    # when the user runs the script with the -h or --help option
+    """Parse command-line arguments for input-dir, vocab-file, and output-file."""
     parser = argparse.ArgumentParser(
         description='Convert raw reviews into BOW feature vectors.'
     )
@@ -91,8 +81,8 @@ def parse_args():
 
 def main():
     args = parse_args()
-    vocab, word2idx = load_vocab(args.vocab_file) #load the vocab file
-    process_reviews(args.input_dir, args.output_file, vocab, word2idx) #process the reviews
+    vocab, word2idx = load_vocab(args.vocab_file)
+    process_reviews(args.input_dir, args.output_file, vocab, word2idx)
 
     print(f"Loaded {len(vocab)} words from vocabulary.") 
     print(f"INPUT DIR   = {args.input_dir}")
