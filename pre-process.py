@@ -22,6 +22,19 @@ def load_vocab(path): #Read a vocab file (one word per line) and return (vocab, 
     word2idx = {w: i for i, w in enumerate(vocab)} #create a dictionary with word as key and index as value
     return vocab, word2idx
 
+def iter_review_paths(input_dir):
+
+    # Yield (filepath, label) tuples for all review .txt files
+    # under 'pos' and 'neg' subdirectories of input_dir.
+
+    for label in ('pos', 'neg'):
+        dir_path = os.path.join(input_dir, label)
+        if not os.path.isdir(dir_path):
+            raise FileNotFoundError(f"Expected directory: {dir_path}")
+        for filename in os.listdir(dir_path):
+            if filename.endswith('.txt'):
+                yield os.path.join(dir_path, filename), label
+
 def parse_args():
     # Create a parser object
     # and add arguments for input directory, vocab file, and output file
@@ -50,10 +63,16 @@ def parse_args():
     )
     return parser.parse_args()
 
+
 def main():
     args = parse_args()
     vocab, word2idx = load_vocab(args.vocab_file)
     print(f"Loaded {len(vocab)} words from vocabulary.")
+
+    for filepath, label in iter_review_paths(args.input_dir):     #  iterate through review files and labels
+        # TODO: process each 'filepath' with label
+
+        
     print(f"INPUT DIR   = {args.input_dir}")
     print(f"VOCAB FILE  = {args.vocab_file}")
     print(f"OUTPUT FILE = {args.output_file}")
