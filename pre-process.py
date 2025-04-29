@@ -12,18 +12,24 @@ import os
 import re
 from collections import Counter
 
-def load_vocab(path):
-    """Read a vocab file (one word per line) and return (vocab_list, word2idx_dict)."""
+def load_vocab(path): #Read a vocab file (one word per line) and return (vocab, word2idx)
     vocab = []
     with open(path, 'r', encoding='utf8') as f:
         for line in f:
-            w = line.strip()
+            w = line.strip() 
             if w:
-                vocab.append(w)
-    word2idx = {w: i for i, w in enumerate(vocab)}
+                vocab.append(w) #append the word to vocab
+    word2idx = {w: i for i, w in enumerate(vocab)} #create a dictionary with word as key and index as value
     return vocab, word2idx
 
 def parse_args():
+    # Create a parser object
+    # and add arguments for input directory, vocab file, and output file
+    # The input directory should contain "pos" and "neg" subdirectories
+    # The vocab file should contain one word per line
+    # The output file is where the vectorized output will be written
+    # The parser will also display a description of the script
+    # when the user runs the script with the -h or --help option
     parser = argparse.ArgumentParser(
         description='Convert raw reviews into BOW feature vectors.'
     )
