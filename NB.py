@@ -40,8 +40,38 @@ def train_naive_bayes(train_file, model_out):
     Read training vectors, compute class priors and add-one smoothed likelihoods,
     and save model parameters (priors and likelihoods) to model_out.
     """
-    # TODO: implement training
-    pass
+    # Read training data
+    doc_counts = {}
+    token_counts = {}
+    total_docs = 0
+    V = None
+    with open(train_file, 'r', encoding='utf8') as f:
+        for line in f:
+            parts = line.strip().split()
+            if not parts:
+                continue
+            label = parts[0]
+            counts = list(map(int, parts[1:]))
+            if V is None:
+                V = len(counts)
+            doc_counts[label] = doc_counts.get(label, 0) + 1
+            if label not in token_counts:
+                token_counts[label] = [0]*V
+            for i, c in enumerate(counts):
+                token_counts[label][i] += c
+            total_docs += 1
+    # Compute priors
+    priors = {label: doc_counts[label]/total_docs for label in doc_counts}
+    # Compute smoothed likelihoods
+    likelihoods = {}
+    for label, counts in token_counts.items():
+        total_wc = sum(counts)
+        denom = total_wc + V
+        likelihoods[label] = [(count + 1)/denom for count in counts]
+    # Save model
+    model = {'priors': priors, 'likelihoods': likelihoods}
+    with open(model_out, 'wb') as mf:
+        pickle.dump(model, mf)
 
 def test_naive_bayes(test_file, model_in, pred_out):
     """
