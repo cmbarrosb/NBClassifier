@@ -35,7 +35,7 @@ def parse_args():
     )
     return parser.parse_args()
 
-def train_naive_bayes(train_file, model_out):
+def train_nb(train_file, model_out):
     """
     Read training vectors, compute class priors and add-one smoothed likelihoods,
     and save model parameters (priors and likelihoods) to model_out.
@@ -45,46 +45,95 @@ def train_naive_bayes(train_file, model_out):
     token_counts = {}
     total_docs = 0
     V = None
+
     with open(train_file, 'r', encoding='utf8') as f:
         for line in f:
             parts = line.strip().split()
-            if not parts:
+            if not parts: # skip empty lines
                 continue
-            label = parts[0]
-            counts = list(map(int, parts[1:]))
+            label = parts[0] # first token is pos or neg label
+            counts = list(map(int, parts[1:])) # string to int
+
             if V is None:
                 V = len(counts)
-            doc_counts[label] = doc_counts.get(label, 0) + 1
-            if label not in token_counts:
+
+            doc_counts[label] = doc_counts.get(label, 0) + 1 #NC to compute priors
+
+            if label not in token_counts: 
                 token_counts[label] = [0]*V
-            for i, c in enumerate(counts):
-                token_counts[label][i] += c
+
+            for i, c in enumerate(counts): 
+                token_counts[label][i] += c #total number of Wi for each label
             total_docs += 1
+
     # Compute priors
-    priors = {label: doc_counts[label]/total_docs for label in doc_counts}
+    priors = {label: doc_counts[label]/total_docs for label in doc_counts}# NC/total_docs
+
     # Compute smoothed likelihoods
     likelihoods = {}
     for label, counts in token_counts.items():
         total_wc = sum(counts)
         denom = total_wc + V
         likelihoods[label] = [(count + 1)/denom for count in counts]
+        # Add-one smoothing: P(Wi|C) = (count(Wi, C) + 1) / (total_wc + V)
+        
     # Save model
     model = {'priors': priors, 'likelihoods': likelihoods}
     with open(model_out, 'wb') as mf:
         pickle.dump(model, mf)
 
-def test_naive_bayes(test_file, model_in, pred_out):
+def test_nb(test_file, model_in, pred_out):
     """
     Load model parameters from model_in, predict labels for test_file,
     write one prediction per line to pred_out, and append overall accuracy.
     """
-    # TODO: implement testing
-    pass
+    # Load model parameters
+    with open(model_in, 'rb') as mf:
+        model = pickle.load(mf)
+    priors = model['priors']
+    likelihoods = model['likelihoods']
+
+    # Precompute logs to avoid overflo to -Inf
+    log_priors = {label: math.log(p) for label, p in priors.items()}
+    log_likelihoods = {
+        label: [math.log(p) for p in probs]
+        for label, probs in likelihoods.items()
+    }
+    # Classify test data
+    correct = 0
+    total = 0
+    with open(pred_out, 'w', encoding='utf8') as out_f:
+        with open(test_file, 'r', encoding='utf8') as f:
+            for line in f:
+                parts = line.strip().split()
+                if not parts: # skip empty lines
+                    continue
+                true_label = parts[0] # first token is pos or neg label
+                counts = list(map(int, parts[1:])) # string to int
+
+
+                # compute scores
+                scores = {}
+                for label in priors:
+                    score = log_priors[label]
+                    for i, c in enumerate(counts):
+                        if c:
+                            score += c * log_likelihoods[label][i]
+                    scores[label] = score
+                # predict
+                pred = max(scores, key=scores.get)
+                out_f.write(f"{pred} {true_label}\n")
+                if pred == true_label:
+                    correct += 1
+                total += 1
+        # write accuracy
+        accuracy = correct/total if total else 0.0
+        out_f.write(f"Accuracy: {accuracy:.4f}\n")
 
 def main():
     args = parse_args()
-    train_naive_bayes(args.train_file, args.model_out)
-    test_naive_bayes(args.test_file, args.model_out, args.pred_out)
+    train_nb(args.train_file, args.model_out)
+    test_nb(args.test_file, args.model_out, args.pred_out)
 
 if __name__ == '__main__':
     main()
