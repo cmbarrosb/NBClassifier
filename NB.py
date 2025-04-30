@@ -115,13 +115,14 @@ def test_nb(test_file, model_in, pred_out):
                 # compute scores
                 scores = {}
                 for label in priors:
-                    score = log_priors[label]
+                    score = log_priors[label] # log(P(C))
                     for i, c in enumerate(counts):
                         if c:
                             score += c * log_likelihoods[label][i]
                     scores[label] = score
+
                 # predict
-                pred = max(scores, key=scores.get)
+                pred = max(scores, key=scores.get) #returns the label whose score is largest
                 out_f.write(f"{pred} {true_label}\n")
                 if pred == true_label:
                     correct += 1
