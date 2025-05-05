@@ -20,22 +20,22 @@ def parse_args():
         description='Train and test a Naïve Bayes classifier.'
     )
     parser.add_argument(
-        '--train', '-t',
+        '--train-file', '-t',
         help='Path to the training vector file',
         default='train.vectors'
     )
     parser.add_argument(
-        '--test', '-e',
+        '--test-file', '-e',
         help='Path to the test vector file',
         default='test.vectors'
     )
     parser.add_argument(
-        '--model', '-m',
+        '--model-out', '-m',
         help='Output path to save trained model parameters',
         default='model.pkl'
     )
     parser.add_argument(
-        '--pred', '-p',
+        '--pred-out', '-p',
         help='Output file for test predictions (one per line), with accuracy on last line',
         default='predictions.txt'
     )
@@ -157,7 +157,7 @@ def main():
     # If the model already exists, skip training
     if not os.path.exists(args.model_out):
         train_nb(args.train_file, args.model_out, args.binary)
-    test_nb(args.test_file, args.model_out, args.pred_out, args.binary)
+    test_nb(args.test_file, args.model_out, args.pred_out , args.binary)
 
 if __name__ == '__main__':
     main()
