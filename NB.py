@@ -154,10 +154,8 @@ def test_nb(test_file, model_in, pred_out, binary=False):
 
 def main():
     args = parse_args()
-    # If the model already exists, skip training
-    if not os.path.exists(args.model_out):
-        train_nb(args.train_file, args.model_out, args.binary)
-    test_nb(args.test_file, args.model_out, args.pred_out , args.binary)
+    train_nb(args.train_file, args.model_out, args.binary)
+
 
 if __name__ == '__main__':
     main()
