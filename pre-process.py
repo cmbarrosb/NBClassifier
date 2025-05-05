@@ -55,21 +55,19 @@ def process_reviews(input_dir, output_file, vocab, word2idx, negation=False):
             tokens = text.split()
             # Apply negation marking if enabled
             if negation:
-                marked = []
+                filtered = []
                 neg_scope = False
                 for tok in tokens:
                     if tok in NEG_TOKENS:
                         neg_scope = True
-                        marked.append(tok)
-                    elif tok in PUNCTUATION:
+                        continue
+                    if tok in PUNCTUATION:
                         neg_scope = False
-                        marked.append(tok)
-                    else:
-                        if neg_scope:
-                            marked.append("NOT_" + tok)
-                        else:
-                            marked.append(tok)
-                tokens = marked
+                        continue
+                    if neg_scope:
+                        continue
+                    filtered.append(tok)
+                tokens = filtered
             counts = Counter(tokens)
             # Build BOW vector
             vec = [counts.get(word, 0) for word in vocab]
