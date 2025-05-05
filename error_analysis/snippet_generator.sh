@@ -2,7 +2,7 @@
 # Generate snippets of the first 100 words for each misclassified review
 
 SNIPPETS_DIR="error_analysis/snippets"
-BAD_FILES="error_analysis/error_files.txt"
+BAD_FILES="error_analysis/errors.txt"
 NUM_WORDS=100
 
 mkdir -p "$SNIPPETS_DIR"
