@@ -1,0 +1,10 @@
+moviereview/aclImdb/test/pos/10056_8.txt
+moviereview/aclImdb/test/pos/2517_7.txt
+moviereview/aclImdb/test/neg/8227_2.txt
+moviereview/aclImdb/test/neg/5171_4.txt
+moviereview/aclImdb/test/neg/5355_1.txt
+moviereview/aclImdb/test/pos/11576_10.txt
+moviereview/aclImdb/test/pos/10993_10.txt
+moviereview/aclImdb/test/pos/4241_7.txt
+moviereview/aclImdb/test/neg/4814_2.txt
+moviereview/aclImdb/test/neg/236_3.txt
