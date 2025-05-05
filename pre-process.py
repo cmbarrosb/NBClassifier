@@ -12,7 +12,10 @@ import os
 import re
 from collections import Counter
 
-PUNCT_RE = re.compile(r'([^\w\s])') # Matches any non-word character or whitespace
+NEG_TOKENS = {"not", "never", "n't", "no"}
+PUNCTUATION = {".", ",", "!", "?", ";", ":"}
+
+PUNCT_RE = re.compile(r'([^\w\s])') #matches any non-word character or whitespace
 
 def load_vocab(path):
     """Read a vocab file (one word per line) and return (vocab_list, word2idx_dict)."""
@@ -36,7 +39,7 @@ def review_paths(input_dir):
                 yield os.path.join(dir_path, filename), label
 
 
-def process_reviews(input_dir, output_file, vocab, word2idx):
+def process_reviews(input_dir, output_file, vocab, word2idx, negation=False):
     """
     Process each review file and write BOW vectors to output_file.
     """
@@ -50,6 +53,23 @@ def process_reviews(input_dir, output_file, vocab, word2idx):
             text = PUNCT_RE.sub(r' \1 ', text)
             # Tokenize and count
             tokens = text.split()
+            # Apply negation marking if enabled
+            if negation:
+                marked = []
+                neg_scope = False
+                for tok in tokens:
+                    if tok in NEG_TOKENS:
+                        neg_scope = True
+                        marked.append(tok)
+                    elif tok in PUNCTUATION:
+                        neg_scope = False
+                        marked.append(tok)
+                    else:
+                        if neg_scope:
+                            marked.append("NOT_" + tok)
+                        else:
+                            marked.append(tok)
+                tokens = marked
             counts = Counter(tokens)
             # Build BOW vector
             vec = [counts.get(word, 0) for word in vocab]
@@ -61,7 +81,9 @@ def process_reviews(input_dir, output_file, vocab, word2idx):
 def parse_args():
     """Parse command-line arguments for input-dir, vocab-file, and output-file."""
     parser = argparse.ArgumentParser(
-        description='Convert raw reviews into BOW feature vectors.'
+        description='Convert raw reviews into BOW feature vectors.' \
+        '\test output = test.vectors' \
+        'Defaults to train.vectors a moviereview/aclImdb/train and moviereview/aclImdb/imdb.vocab'
     )
     parser.add_argument(
         '--input-dir', '-i',
@@ -78,13 +100,18 @@ def parse_args():
         default='train.vectors',
         help='File path to write the vectorized output'
     )
+    parser.add_argument(
+        '--negation', '-n',
+        action='store_true',
+        help='Enable negation marking: prepend NOT_ to tokens until punctuation'
+    )
     return parser.parse_args()
 
 
 def main():
     args = parse_args()
     vocab, word2idx = load_vocab(args.vocab_file)
-    process_reviews(args.input_dir, args.output_file, vocab, word2idx)
+    process_reviews(args.input_dir, args.output_file, vocab, word2idx, args.negation)
 
     print(f"Loaded {len(vocab)} words from vocabulary.") 
     print(f"INPUT DIR   = {args.input_dir}")
