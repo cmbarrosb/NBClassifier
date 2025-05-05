@@ -7,7 +7,6 @@ Train and evaluate a Naïve Bayes classifier using pre-processed BOW vectors.
 import argparse
 import math
 import pickle
-import sys
 import os
 
 # Load vocabulary to determine feature dimension for sparse vectors
@@ -77,14 +76,14 @@ def train_nb(train_file, model_out):
     #  priors no smoothing
     priors = {label: doc_counts[label]/total_docs for label in doc_counts}# NC/total_docs
 
-    # Compute smoothed likelihoods
+    #smoothed likelihoods
     likelihoods = {}
     for label, counts in token_counts.items():
         total_wc = sum(counts)
         denom = total_wc + V
         likelihoods[label] = [(count + 1)/denom for count in counts]
         
-    # Save model in pickle format
+    # model in pickle format
     model = {'priors': priors, 'likelihoods': likelihoods}
     with open(model_out, 'wb') as mf:
         pickle.dump(model, mf)
@@ -100,7 +99,7 @@ def test_nb(test_file, model_in, pred_out):
     priors = model['priors']
     likelihoods = model['likelihoods']
 
-    # Precompute logs to avoid overflo to -Inf
+    #compute logs to avoid overflo to -Inf
     log_priors = {label: math.log(p) for label, p in priors.items()}
     log_likelihoods = {
         label: [math.log(p) for p in probs]
