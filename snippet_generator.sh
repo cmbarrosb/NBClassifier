@@ -3,7 +3,7 @@
 
 SNIPPETS_DIR="error_analysis/snippets"
 BAD_FILES="error_analysis/error_files.txt"
-NUM_WORDS=100
+NUM_WORDS=200
 
 
 mkdir -p "$SNIPPETS_DIR"
