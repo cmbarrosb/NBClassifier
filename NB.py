@@ -24,20 +24,24 @@ def parse_args():
         description='Train and test a Naïve Bayes classifier.'
     )
     parser.add_argument(
-        '--train-file', '-t', required=True,
-        help='Path to the training vector file'
+        '--train-file', '-t',
+        help='Path to the training vector file',
+        default='train.vectors'
     )
     parser.add_argument(
-        '--test-file', '-e', required=True,
-        help='Path to the test vector file'
+        '--test-file', '-e',
+        help='Path to the test vector file',
+        default='test.vectors'
     )
     parser.add_argument(
-        '--model-out', '-m', required=True,
-        help='Output path to save trained model parameters'
+        '--model-out', '-m',
+        help='Output path to save trained model parameters',
+        default='movie-review-BOW.NB'
     )
     parser.add_argument(
-        '--pred-out', '-p', required=True,
-        help='Output file for test predictions (one per line), with accuracy on last line'
+        '--pred-out', '-p',
+        help='Output file for test predictions (one per line), with accuracy on last line',
+        default='predictions.txt'
     )
     return parser.parse_args()
 

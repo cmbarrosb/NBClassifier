@@ -65,17 +65,17 @@ def parse_args():
     )
     parser.add_argument(
         '--input-dir', '-i',
-        required=True,
+        default='moviereview/aclImdb/train',
         help='Root folder containing "pos" and "neg" subdirs'
     )
     parser.add_argument(
         '--vocab-file', '-v',
-        required=True,
+        default='moviereview/aclImdb/imdb.vocab',
         help='Path to vocabulary file (one word per line)'
     )
     parser.add_argument(
         '--output-file', '-o',
-        required=True,
+        default='train.vectors',
         help='File path to write the vectorized output'
     )
     return parser.parse_args()
