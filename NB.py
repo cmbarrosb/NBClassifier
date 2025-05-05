@@ -36,7 +36,7 @@ def parse_args():
     parser.add_argument(
         '--model-out', '-m',
         help='Output path to save trained model parameters',
-        default='movie-review-BOW.NB'
+        default='model.pkl'
     )
     parser.add_argument(
         '--pred-out', '-p',
