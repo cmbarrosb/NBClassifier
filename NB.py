@@ -4,8 +4,6 @@ NB.py
 
 Train and evaluate a Naïve Bayes classifier using pre-processed BOW vectors.
 """
-
-
 import argparse
 import math
 import pickle
@@ -57,13 +55,14 @@ def train_nb(train_file, model_out):
     with open(train_file, 'r', encoding='utf8') as f:
         for line in f:
             parts = line.strip().split()
-            if not parts: # skip empty lines
+            if not parts: # skips empty lines
                 continue
             label = parts[0] # first token is pos or neg label
-            # Parse sparse "index:count" features into dense count list
-            counts = [0] * V
+            
+            # parse sparse "index:count" features into  count list
+            counts = [0]*V
             for spec in parts[1:]:
-                idx_str, cnt_str = spec.split(':')
+                idx_str, cnt_str = spec.split(':') # index:count
                 counts[int(idx_str) - 1] = int(cnt_str)
 
             doc_counts[label] = doc_counts.get(label, 0) + 1 #NC to compute priors
@@ -75,7 +74,7 @@ def train_nb(train_file, model_out):
                 token_counts[label][i] += c #total number of Wi for each label
             total_docs += 1
 
-    # Compute priors
+    #  priors no smoothing
     priors = {label: doc_counts[label]/total_docs for label in doc_counts}# NC/total_docs
 
     # Compute smoothed likelihoods
@@ -84,9 +83,8 @@ def train_nb(train_file, model_out):
         total_wc = sum(counts)
         denom = total_wc + V
         likelihoods[label] = [(count + 1)/denom for count in counts]
-        # Add-one smoothing: P(Wi|C) = (count(Wi, C) + 1) / (total_wc + V)
         
-    # Save model
+    # Save model in pickle format
     model = {'priors': priors, 'likelihoods': likelihoods}
     with open(model_out, 'wb') as mf:
         pickle.dump(model, mf)
@@ -108,9 +106,10 @@ def test_nb(test_file, model_in, pred_out):
         label: [math.log(p) for p in probs]
         for label, probs in likelihoods.items()
     }
-    # Classify test data
+    #classify 
     correct = 0
     total = 0
+    # Open prediction output file
     with open(pred_out, 'w', encoding='utf8') as out_f:
         with open(test_file, 'r', encoding='utf8') as f:
             for line in f:
@@ -119,11 +118,11 @@ def test_nb(test_file, model_in, pred_out):
                     continue
                 true_label = parts[0] # first token is pos or neg label
                 
-                # Parse sparse "index:count" features into dense count list
+                # Parse sparse "index:count" features into count list
                 counts = [0] * V
                 for spec in parts[1:]:
                     idx_str, cnt_str = spec.split(':')
-                    counts[int(idx_str) - 1] = int(cnt_str)
+                    counts[int(idx_str) - 1] = int(cnt_str) # index starts at 1
 
 
                 # compute scores
@@ -132,15 +131,16 @@ def test_nb(test_file, model_in, pred_out):
                     score = log_priors[label] # log(P(C))
                     for i, c in enumerate(counts):
                         if c:
-                            score += c * log_likelihoods[label][i]
+                            score += c * log_likelihoods[label][i] # log(P(Wi|C)) * count
                     scores[label] = score
 
                 # predict
                 pred = max(scores, key=scores.get) #returns the label whose score is largest
-                out_f.write(f"{pred} {true_label}\n")
+                out_f.write(f"{pred} {true_label}\n") 
                 if pred == true_label:
                     correct += 1
-                total += 1
+                total += 1 # 
+
         # write accuracy
         accuracy = correct/total if total else 0.0
         out_f.write(f"Accuracy: {accuracy:.4f}\n")
