@@ -7,10 +7,16 @@ NB.py
 Train and evaluate a Naïve Bayes classifier using pre-processed BOW vectors.
 """
 
+
 import argparse
 import math
 import pickle
 import sys
+
+# Load vocabulary to determine feature dimension for sparse vectors
+VOCAB_FILE = 'moviereview/aclImdb/imdb.vocab'
+vocab = [w.strip() for w in open(VOCAB_FILE, encoding='utf8')]
+V = len(vocab)
 
 def parse_args():
     """Parse command-line arguments for training and testing."""
@@ -44,7 +50,6 @@ def train_nb(train_file, model_out):
     doc_counts = {}
     token_counts = {}
     total_docs = 0
-    V = None
 
     with open(train_file, 'r', encoding='utf8') as f:
         for line in f:
@@ -52,17 +57,18 @@ def train_nb(train_file, model_out):
             if not parts: # skip empty lines
                 continue
             label = parts[0] # first token is pos or neg label
-            counts = list(map(int, parts[1:])) # string to int
-
-            if V is None:
-                V = len(counts)
+            # Parse sparse "index:count" features into dense count list
+            counts = [0] * V
+            for spec in parts[1:]:
+                idx_str, cnt_str = spec.split(':')
+                counts[int(idx_str) - 1] = int(cnt_str)
 
             doc_counts[label] = doc_counts.get(label, 0) + 1 #NC to compute priors
 
-            if label not in token_counts: 
+            if label not in token_counts:
                 token_counts[label] = [0]*V
 
-            for i, c in enumerate(counts): 
+            for i, c in enumerate(counts):
                 token_counts[label][i] += c #total number of Wi for each label
             total_docs += 1
 
@@ -109,7 +115,12 @@ def test_nb(test_file, model_in, pred_out):
                 if not parts: # skip empty lines
                     continue
                 true_label = parts[0] # first token is pos or neg label
-                counts = list(map(int, parts[1:])) # string to int
+                
+                # Parse sparse "index:count" features into dense count list
+                counts = [0] * V
+                for spec in parts[1:]:
+                    idx_str, cnt_str = spec.split(':')
+                    counts[int(idx_str) - 1] = int(cnt_str)
 
 
                 # compute scores

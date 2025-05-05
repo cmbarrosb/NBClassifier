@@ -53,8 +53,10 @@ def process_reviews(input_dir, output_file, vocab, word2idx):
             counts = Counter(tokens)
             # Build BOW vector
             vec = [counts.get(word, 0) for word in vocab]
-            # Write label + feature counts
-            out_f.write(label + ' ' + ' '.join(str(v) for v in vec) + '\n')
+            # Build sparse representation: only nonzero features as "index:count"
+            sparse_feats = [f"{i}:{cnt}" for i, cnt in enumerate(vec, start=1) if cnt > 0]
+            # Write label + sparse feature list
+            out_f.write(label + ' ' + ' '.join(sparse_feats) + '\n')
 
 def parse_args():
     """Parse command-line arguments for input-dir, vocab-file, and output-file."""
