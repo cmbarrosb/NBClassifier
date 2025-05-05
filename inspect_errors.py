@@ -31,8 +31,8 @@ for lab in ("pos","neg"):
         if fn.endswith(".txt"):
             paths.append((lab, os.path.join(folder, fn)))
 
-# Sample
-sampled = random.sample(bad_idxs, min(NUM_SAMPLES, len(bad_idxs)))
+
+sampled = random.sample(bad_idxs, min(NUM_SAMPLES, len(bad_idxs))) # sample from bad indices
 
 for idx in sampled:
     print(f"\n=== Example #{idx} ===")
