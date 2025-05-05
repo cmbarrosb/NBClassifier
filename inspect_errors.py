@@ -38,11 +38,11 @@ for idx in sampled:
     print(f"\n=== Example #{idx} ===")
     # 1) List non-zero tokens
     vec = test_vecs[idx-1]    # idx is 1-based
-    counts = list(map(int, vec[1:]))
     print("Tokens:")
-    for i, c in enumerate(counts):
-        if c > 0:
-            print(f"  {vocab[i]}: {c}")
+    for spec in vec[1:]:
+        idx_str, cnt_str = spec.split(':')
+        word_index = int(idx_str) - 1
+        print(f"  {vocab[word_index]}: {cnt_str}")
     # 2) Show raw file path
     if 1 <= idx <= len(paths):
         lab, path = paths[idx-1]
