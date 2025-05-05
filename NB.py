@@ -20,28 +20,33 @@ def parse_args():
         description='Train and test a Naïve Bayes classifier.'
     )
     parser.add_argument(
-        '--train-file', '-t',
+        '--train', '-t',
         help='Path to the training vector file',
         default='train.vectors'
     )
     parser.add_argument(
-        '--test-file', '-e',
+        '--test', '-e',
         help='Path to the test vector file',
         default='test.vectors'
     )
     parser.add_argument(
-        '--model-out', '-m',
+        '--model', '-m',
         help='Output path to save trained model parameters',
         default='model.pkl'
     )
     parser.add_argument(
-        '--pred-out', '-p',
+        '--pred', '-p',
         help='Output file for test predictions (one per line), with accuracy on last line',
         default='predictions.txt'
     )
+    parser.add_argument(
+        '--binary', '-b',
+        action='store_true',
+        help='Use binary bag-of-words (presence/absence) instead of raw counts'
+    )
     return parser.parse_args()
 
-def train_nb(train_file, model_out):
+def train_nb(train_file, model_out, binary=False):
     """
     Read training vectors, compute class priors and add-one smoothed likelihoods,
     and save model parameters (priors and likelihoods) to model_out.
@@ -63,6 +68,8 @@ def train_nb(train_file, model_out):
             for spec in parts[1:]:
                 idx_str, cnt_str = spec.split(':') # index:count
                 counts[int(idx_str) - 1] = int(cnt_str)
+            if binary:
+                counts = [1 if c else 0 for c in counts]
 
             doc_counts[label] = doc_counts.get(label, 0) + 1 #NC to compute priors
 
@@ -88,7 +95,7 @@ def train_nb(train_file, model_out):
     with open(model_out, 'wb') as mf:
         pickle.dump(model, mf)
 
-def test_nb(test_file, model_in, pred_out):
+def test_nb(test_file, model_in, pred_out, binary=False):
     """
     Load model parameters from model_in, predict labels for test_file,
     write one prediction per line to pred_out, and append overall accuracy.
@@ -122,7 +129,8 @@ def test_nb(test_file, model_in, pred_out):
                 for spec in parts[1:]:
                     idx_str, cnt_str = spec.split(':')
                     counts[int(idx_str) - 1] = int(cnt_str) # index starts at 1
-
+                if binary:
+                    counts = [1 if c else 0 for c in counts]
 
                 # compute scores
                 scores = {}
@@ -147,11 +155,9 @@ def test_nb(test_file, model_in, pred_out):
 def main():
     args = parse_args()
     # If the model already exists, skip training
-    if os.path.exists(args.model_out):
-        print(f"Model file '{args.model_out}' found; skipping training.")
-    else:
-        train_nb(args.train_file, args.model_out)
-    test_nb(args.test_file, args.model_out, args.pred_out)
+    if not os.path.exists(args.model_out):
+        train_nb(args.train_file, args.model_out, args.binary)
+    test_nb(args.test_file, args.model_out, args.pred_out, args.binary)
 
 if __name__ == '__main__':
     main()
