@@ -1,5 +1,3 @@
-
-
 #!/usr/bin/env python3
 """
 NB.py
@@ -113,8 +111,6 @@ def test_nb(test_file, model_in, pred_out):
     # Classify test data
     correct = 0
     total = 0
-    pos_tp = 0
-    pos_fp = 0
     with open(pred_out, 'w', encoding='utf8') as out_f:
         with open(test_file, 'r', encoding='utf8') as f:
             for line in f:
@@ -144,22 +140,10 @@ def test_nb(test_file, model_in, pred_out):
                 out_f.write(f"{pred} {true_label}\n")
                 if pred == true_label:
                     correct += 1
-                # track positives for precision
-                if pred == 'pos':
-                    if true_label == 'pos':
-                        pos_tp += 1
-                    else:
-                        pos_fp += 1
                 total += 1
         # write accuracy
         accuracy = correct/total if total else 0.0
         out_f.write(f"Accuracy: {accuracy:.4f}\n")
-        # compute and write precision for positive class
-        if pos_tp + pos_fp > 0:
-            precision = pos_tp / (pos_tp + pos_fp)
-        else:
-            precision = 0.0
-        out_f.write(f"Precision: {pos_tp}/{pos_tp+pos_fp} = {precision:.4f}\n")
 
 def main():
     args = parse_args()
